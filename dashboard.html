@@ -8,7 +8,10 @@
 <body>
 
 <nav>
-    <h1>MyTravel</h1>
+    <div style="display:flex;align-items:center">
+      <button class="back-btn" onclick="history.back()">← Back</button>
+      <h1>MyTravel</h1>
+    </div>
     <div class="menu">
         <a href="index.html">Home</a>
         <a href="add-place.html">Tambah Wisata</a>
@@ -28,8 +31,8 @@
 </div>
 
 <script src="script.js"></script>
-<script type="module" src="js/api.js"></script>
-<script type="module" src="js/dashboard.js"></script>
+<script src="js/api.js"></script>
+<script src="js/dashboard.js"></script>
 
 </body>
 </html>

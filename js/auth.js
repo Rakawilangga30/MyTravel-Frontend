@@ -1,53 +1,43 @@
-import { apiRequest } from './api.js';
-
+// Use global apiRequest (defined in js/api.js) and include credentials for session cookie
 // Login User
 async function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+  const email = document.getElementById('email')?.value
+  const password = document.getElementById('password')?.value
+  if(!email || !password){ alert('Email dan Password wajib diisi'); return }
 
-    if (!email || !password) {
-        alert("Email dan Password wajib diisi");
-        return;
-    }
+  const helper = window.apiRequest || (async (p, o)=>{ // fallback
+    const res = await fetch((window.API||'') + p, { method: o.method||'GET', headers: {'Content-Type':'application/json'}, body: JSON.stringify(o.body||{}), credentials: 'include' })
+    return res.json()
+  })
 
-    const data = await apiRequest("/api/auth/login", {
-        method: "POST",
-        body: { email, password }
-    });
-
-    if (data.error) {
-        alert(data.error);
-    } else {
-        alert("Login berhasil!");
-        // Redirect ke dashboard atau home
-        window.location.href = "dashboard.html";
-    }
+  const data = await helper('/api/auth/login', { method: 'POST', body: { email, password } })
+  if(data.error){ alert(data.error); return }
+  alert(data.message || 'Login berhasil')
+  window.location.href = 'dashboard.html'
 }
 
 // Register User
-async function registerUser() {
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+async function registerUser(){
+  const name = document.getElementById('name')?.value
+  const email = document.getElementById('email')?.value
+  const password = document.getElementById('password')?.value
+  if(!name || !email || !password){ alert('Semua data wajib diisi'); return }
 
-    if (!email || !password || !name) {
-        alert("Semua data wajib diisi");
-        return;
-    }
-
-    const data = await apiRequest("/api/auth/register", {
-        method: "POST",
-        body: { name, email, password }
-    });
-
-    if (data.error) {
-        alert(data.error);
-    } else {
-        alert("Registrasi berhasil! Silakan login.");
-        window.location.href = "login.html";
-    }
+  const helper = window.apiRequest || (async (p, o)=>{ const res = await fetch((window.API||'') + p, { method: o.method||'GET', headers: {'Content-Type':'application/json'}, body: JSON.stringify(o.body||{}), credentials: 'include' }); return res.json() })
+  const data = await helper('/api/auth/register', { method: 'POST', body: { name, email, password } })
+  if(data.error){ alert(data.error); return }
+  alert(data.message || 'Registrasi berhasil')
+  window.location.href = 'login.html'
 }
 
-// Expose fungsi ke window agar bisa dipanggil dari HTML onclick="..."
-window.login = login;
-window.registerUser = registerUser;
+// Logout helper
+async function logout(){
+  const helper = window.apiRequest || (async (p,o)=>{ const res = await fetch((window.API||'')+p,{method:o.method||'GET',credentials:'include'}); return res.json() })
+  await helper('/api/auth/logout', { method: 'POST' })
+  window.location.href = 'login.html'
+}
+
+// Expose
+window.login = login
+window.registerUser = registerUser
+window.logout = logout
