@@ -1,19 +1,31 @@
-const API_BASE = window.API_BASE || '/api';
+const BASE = window.API_BASE || 'http://localhost:8080';
 
-async function apiRequest(path, {method='GET', body, token, headers={}} = {}){
-  const opts = {method, headers: {...headers}}
-  if(body){
-    opts.body = JSON.stringify(body)
-    opts.headers['Content-Type'] = 'application/json'
-  }
-  if(token){ opts.headers['Authorization'] = 'Bearer ' + token }
-  const res = await fetch(API_BASE + path, opts)
-  const text = await res.text()
-  try{ return JSON.parse(text) }catch(e){ return text }
+export async function apiRequest(path, { method = 'GET', body, headers = {} } = {}) {
+    const opts = {
+        method,
+        headers: { ...headers },
+        credentials: 'include', // <--- WAJIB: Agar Cookie Session dikirim ke Backend
+    };
+
+    if (body instanceof FormData) {
+        // Jika FormData (upload foto), jangan set Content-Type (biar browser yang atur boundary)
+        opts.body = body;
+    } else if (body) {
+        // Jika JSON biasa
+        opts.body = JSON.stringify(body);
+        opts.headers['Content-Type'] = 'application/json';
+    }
+
+    try {
+        const res = await fetch(BASE + path, opts);
+        const text = await res.text();
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            return text;
+        }
+    } catch (err) {
+        console.error("API Error:", err);
+        return { error: "Gagal terhubung ke server" };
+    }
 }
-
-// expose handy globals for non-module scripts
-window.API_BASE = API_BASE
-window.apiRequest = apiRequest
-
-export { apiRequest }

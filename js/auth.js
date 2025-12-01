@@ -1,46 +1,53 @@
-// Simple auth helper that uses apiRequest if available
-function saveToken(token){ try{ localStorage.setItem('mt_token', token) }catch(e){} }
+import { apiRequest } from './api.js';
 
-async function login(){
-    const email = document.getElementById('email')?.value
-    const password = document.getElementById('password')?.value
-    if(!email || !password){ alert('Email & password wajib'); return }
+// Login User
+async function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-    try{
-        const res = (window.apiRequest)
-          ? await window.apiRequest('/auth/login', {method:'POST', body:{email,password}})
-          : await fetch(window.API_BASE + '/auth/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})}).then(r=>r.json())
+    if (!email || !password) {
+        alert("Email dan Password wajib diisi");
+        return;
+    }
 
-        if(res.error){ alert(res.error); return }
-        // If backend returns token store it, otherwise store a minimal flag
-        if(res.token) saveToken(res.token)
-        alert(res.message || 'Login berhasil')
-        window.location.href = 'index.html'
-    }catch(err){
-        console.error(err)
-        alert('Login gagal, cek console untuk detil')
+    const data = await apiRequest("/api/auth/login", {
+        method: "POST",
+        body: { email, password }
+    });
+
+    if (data.error) {
+        alert(data.error);
+    } else {
+        alert("Login berhasil!");
+        // Redirect ke dashboard atau home
+        window.location.href = "dashboard.html";
     }
 }
 
-async function registerUser(){
-    const name = document.getElementById('name')?.value
-    const email = document.getElementById('email')?.value
-    const password = document.getElementById('password')?.value
-    if(!email || !password){ alert('Email & password wajib'); return }
+// Register User
+async function registerUser() {
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-    try{
-        const res = (window.apiRequest)
-          ? await window.apiRequest('/auth/register', {method:'POST', body:{name,email,password}})
-          : await fetch(window.API_BASE + '/auth/register', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password})}).then(r=>r.json())
+    if (!email || !password || !name) {
+        alert("Semua data wajib diisi");
+        return;
+    }
 
-        if(res.error){ alert(res.error); return }
-        alert(res.message || 'Registrasi berhasil')
-        window.location.href = 'login.html'
-    }catch(err){ console.error(err); alert('Registrasi gagal') }
+    const data = await apiRequest("/api/auth/register", {
+        method: "POST",
+        body: { name, email, password }
+    });
+
+    if (data.error) {
+        alert(data.error);
+    } else {
+        alert("Registrasi berhasil! Silakan login.");
+        window.location.href = "login.html";
+    }
 }
 
-// expose to global for inline onclick usages
-window.login = login
-window.registerUser = registerUser
-
-export { login, registerUser }
+// Expose fungsi ke window agar bisa dipanggil dari HTML onclick="..."
+window.login = login;
+window.registerUser = registerUser;
